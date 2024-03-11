@@ -1,32 +1,35 @@
 #!/usr/bin/env python3
 
 class CashRegister:
+
     def __init__(self, discount=0):
         self.discount = discount
         self.total = 0
         self.items = []
+        self.previous = []
 
-    def add_item(self, title, price, quantity=1):
+    def add_item(self, item, price, quantity=1):
         self.total += price * quantity
-        self.items.extend([title] * quantity)
+        for _ in range(quantity):
+            self.items.append(item)
+            self.previous.append({"item": item, "quantity": quantity, "price": price})
 
     def apply_discount(self):
-        if self.discount > 0:
-            discount_amount = self.total * (self.discount / 100)
-            self.total -= discount_amount
-            return f"After the discount, the total comes to ${self.total:.2f}.\n"
+        if self.discount:
+            self.total = int(self.total * ((100 - self.discount) / 100))
+            print(f"After the discount, the total comes to ${self.total}.")
         else:
-            return "There is no discount to apply.\n"
+            print("There is no discount to apply.")
 
     def void_last_transaction(self):
-        if self.items:
-            last_item_price = self._get_last_item_price()
-            self.total -= last_item_price
-            self.items.pop()
-        else:
-            return "No transactions to void."
+        if not self.previous:
+            return "There are no transactions to void."
 
-    def _get_last_item_price(self):
-        last_item_title = self.items[-1]
-        return self._get_price_of_item(last_item_title)
+        last_transaction = self.previous.pop()
+        price = last_transaction["price"]
+        quantity = last_transaction["quantity"]
 
+        self.total -= price * quantity
+        self.items = self.items[:-quantity]
+
+        return "Transaction voided successfully."
